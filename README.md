@@ -14,6 +14,9 @@ It is better to run PR bully from a CI daily. Keep in mind CI bully does not kee
 ## Only count the workdays. Defaults to false
 #only_workdays: true 
 
+## Count using the last commit date, instead of the date when PR was created. Defaults to false
+#days_since_last_commit: true 
+
 actions:
     # if you specify last anything greater than last will be enforced
   - day: 14
