@@ -13,13 +13,13 @@ import (
 )
 
 type prType struct {
-	client    *github.Client
-	ctx       *context.Context
-	owner     string
-	repo      string
-	OpenSince int
-	CloseOn   int
-	GHpr      *github.PullRequest
+	client       *github.Client
+	ctx          *context.Context
+	owner        string
+	repo         string
+	inactiveDays int
+	CloseOn      int
+	GHpr         *github.PullRequest
 }
 
 const (
@@ -32,11 +32,11 @@ func actions(currentPr prType) {
 
 	for _, actionItem := range runConfig.Actions {
 		switch {
-		case currentPr.OpenSince == actionItem.Day:
+		case currentPr.inactiveDays == actionItem.Day:
 			actionTaken = actionItem
 			takeAction = true
 			break
-		case currentPr.OpenSince > actionItem.Day && actionItem.Last:
+		case currentPr.inactiveDays > actionItem.Day && actionItem.Last:
 			// Last action
 			actionTaken = actionItem
 			takeAction = true
@@ -69,27 +69,53 @@ func checkOpenPRs(ctx *context.Context, client *github.Client, owner string, rep
 	}
 
 	for _, openPullRequest := range openPullRequests {
-		currentPr := prType{
-			client:    client,
-			ctx:       ctx,
-			owner:     owner,
-			repo:      repo,
-			OpenSince: daysSincePRCreated(openPullRequest.CreatedAt),
-			GHpr:      openPullRequest,
+		lastDate, err := lastActionDate(ctx, client, owner, repo, openPullRequest)
+		if err != nil {
+			fmt.Printf("Error %s\n", err)
+			os.Exit(1)
 		}
-		fmt.Printf("Repo %s/%s/#%d user '%s' open since '%d' days : ", owner, repo, *openPullRequest.Number, *openPullRequest.User.Login, currentPr.OpenSince)
+
+		currentPr := prType{
+			client:       client,
+			ctx:          ctx,
+			owner:        owner,
+			repo:         repo,
+			inactiveDays: daysSince(lastDate),
+			GHpr:         openPullRequest,
+		}
+		fmt.Printf("Repo %s/%s/#%d user '%s' open since '%d' days : ", owner, repo, *openPullRequest.Number, *openPullRequest.User.Login, currentPr.inactiveDays)
 		// take action if any
 		actions(currentPr)
 	}
 }
 
-func daysSincePRCreated(CreatedAt *time.Time) int {
-	duration := time.Since(*CreatedAt)
-	if !runConfig.OnlyWorkdays {
-		return int(duration.Hours() / HOURSINADAY)
+func lastActionDate(ctx *context.Context, client *github.Client, owner string, repo string, pullRequest *github.PullRequest) (*time.Time, error) {
+	if !runConfig.DaysSinceLastCommit {
+		return pullRequest.CreatedAt, nil
+	}
+	return lastCommitDate(ctx, client, owner, repo, pullRequest)
+}
+
+func lastCommitDate(ctx *context.Context, client *github.Client, owner string, repo string, pullRequest *github.PullRequest) (*time.Time, error) {
+	commitsList, _, err := client.PullRequests.ListCommits(*ctx, owner, repo, pullRequest.GetNumber(), nil)
+	if err != nil {
+		return nil, err
 	}
 
-	return workdaysBetweenDates(*CreatedAt, time.Now())
+	var lastDate time.Time
+	for _, commit := range commitsList {
+		lastDate = commit.Commit.Committer.GetDate()
+	}
+
+	return &lastDate, nil
+}
+
+func daysSince(date *time.Time) int {
+	if !runConfig.OnlyWorkdays {
+		return int(time.Since(*date).Hours() / HOURSINADAY)
+	}
+
+	return workdaysBetweenDates(*date, time.Now())
 }
 
 // workdaysBetweenDates calculates the workdays between two dates.
@@ -129,7 +155,7 @@ func loopOverRepos() {
 
 func commentOnPr(pr prType, message string) {
 	message = strings.Replace(message, "_USER_", *pr.GHpr.User.Login, -1)
-	message = strings.Replace(message, "_SINCE_", strconv.Itoa(pr.OpenSince), -1)
+	message = strings.Replace(message, "_SINCE_", strconv.Itoa(pr.inactiveDays), -1)
 	message = strings.Replace(message, "_TILL_", strconv.Itoa(pr.CloseOn), -1)
 
 	commentMsg := &github.IssueComment{Body: &message}

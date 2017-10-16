@@ -36,10 +36,11 @@ func (d actionSlice) Less(i, j int) bool {
 }
 
 type options struct {
-	Token        string      `yaml:"token"`
-	Actions      actionSlice `yaml:"actions"`
-	Repos        []string    `yaml:"repos"`
-	OnlyWorkdays bool        `yaml:"only_workdays"`
+	Token               string      `yaml:"token"`
+	Actions             actionSlice `yaml:"actions"`
+	Repos               []string    `yaml:"repos"`
+	OnlyWorkdays        bool        `yaml:"only_workdays"`
+	DaysSinceLastCommit bool        `yaml:"days_since_last_commit"`
 }
 
 func parseConfig(filePath string) {
