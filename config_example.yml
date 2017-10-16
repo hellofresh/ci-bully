@@ -5,6 +5,9 @@
 ## Only count the workdays. Defaults to false
 #only_workdays: true
 
+## Count using the last commit date, instead of the date when PR was created. Defaults to false
+#days_since_last_commit: true
+
 actions:
   - day: 14
     last: true
