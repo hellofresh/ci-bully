@@ -47,6 +47,8 @@ func actions(currentPr prType) {
 		return
 	}
 
+	currentPr.CloseOn = remainingDaysUntilClose(currentPr)
+
 	if arguments["--enable"].(bool) {
 		commentOnPr(currentPr, actionTaken.Message)
 		switch actionTaken.Action {
@@ -58,7 +60,15 @@ func actions(currentPr prType) {
 	} else {
 		fmt.Printf("[%s 'DRY MODE']\n", actionTaken.Action)
 	}
+}
 
+func remainingDaysUntilClose(pullRequest prType) int {
+	for _, actionItem := range runConfig.Actions {
+		if actionItem.Action == "close" {
+			return actionItem.Day - pullRequest.inactiveDays
+		}
+	}
+	return 0
 }
 
 func checkOpenPRs(ctx *context.Context, client *github.Client, owner string, repo string) {
