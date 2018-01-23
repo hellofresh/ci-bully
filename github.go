@@ -51,12 +51,10 @@ func actions(currentPr prType) {
 
 	if arguments["--enable"].(bool) {
 		commentOnPr(currentPr, actionTaken.Message)
-		switch actionTaken.Action {
-		case "close":
+		if actionTaken.Action == "close" {
 			closePr(currentPr)
-		default:
-			fmt.Printf("[%s]\n", actionTaken.Action)
 		}
+		fmt.Printf("[%s]\n", actionTaken.Action)
 	} else {
 		fmt.Printf("[%s 'DRY MODE']\n", actionTaken.Action)
 	}
