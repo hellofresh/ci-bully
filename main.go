@@ -31,7 +31,7 @@ Options:
   -e --enable                       Take action by default it runs in drymode [default: false].
   -h --help                         Show this screen.
   -v --version                      Show version.`
-	arguments, _ = docopt.Parse(usage, nil, true, "", false)
+	arguments, _ = docopt.ParseArgs(usage, nil, "")
 	parseConfig(arguments["--config"].(string))
 	loopOverRepos()
 }
