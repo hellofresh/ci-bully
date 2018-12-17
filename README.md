@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.com/hellofresh/ci-bully.svg?branch=master)](https://travis-ci.com/hellofresh/ci-bully)
 # CI Bully
 
 CI bully is a go program that will warn and close github PRs that are long living. You can define the actions in the configuration.
