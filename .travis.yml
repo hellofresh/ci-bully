@@ -1,10 +1,20 @@
 language: go
 go:
   - 1.11
-
 env:
   - GO111MODULE=on
-
+  global:
+    - secure: d6AW4Ld/Sj5IAU9oaggxh45jkZ/qrTE8d0NPbum0v2qqdIr6pDERnPRqk98pHa9rBj87Q21Xi96Wk998EwrJQtUcSqdJJjgdHRHNZqjWpttOn9OUGxOqjYmVnogebfL5gDHul28UYT5yggaPWjGiEBFL2WHULDPwXV0pRwGL6lk5W06J8DmzgVRMc4V9xjlGEzlS3hS1FiCQ+gntJUlDEdK6s1Yzt6fjEf6nX4Keuwg0y+NZzEICRLPWHXC4ZZWPfZGAn5ZwAxa68rP9JbAqwYcoAiV4mPr5qEdB+sjb1QFQL0YoMDkVi1d/tQFog76JdE+N1r9+HLZeArm7cwm53cuxB5eisYOP75oYw4zQbIHnS9jZdHIQpReCSpZVzYHni56KDwPKufuP9BSxCBZJxuQ2450ADuDRsi/cmhL6QGjcinwfbOm2U4dtduPOBagGcuiPdgKzPSQmNh6jiqzAfzTrSIEGcw4aGN1K0MaiGsQpB7hvuvdOJcYrnO5ejutAvwPMpfpynK2IUhOThcwo9EYcWiUPhd6o0mB/hw1l44Fh9fcE+UnhW5It19cwhwKklSmhUMm6gbD2oDboX6FoXMeWJU6LMy2jeuy/c7+Ehq2cLad0XCGHhCf5l5DjSQdIudeJgCkI01U8bdJqusbvUBBWYfxToNaYHC9xK++iNj4=
+    - secure: Qgy0brODodMr+ihI36dAaYln3Fak9gSNXEEGesf0+Q1cMB24IsXQUED3w5Y+3Ckg6Iciu7Fvdoe8fR0CtlaVKJng1tDXzvWEFmn5Xg1HznINKg9l9ooYwQ4ZmcRDXt47+R+d3cK7lfZhBOZo6xm6PKJkaprYuQNFixfr77qUHoDT+RDxjNKOr/He9QAt1aa+nrET2eCrCq1pJBCNuO9Oq0uHr7w+CfniUAeB8wQ1qbeYJiQiWMIHzuEnFr/k3nz9xYK9sLAOzMrJ6sghIGRfHbHtQLEhD3pRF62U5wk8KknuON3oQFRZRQqOmcKBNQSwPGUaIVjgtsPL0mIIiJJL8RZq7eNL1Qy5FEwNjcRwIsKnVH7832eaG7xLPq1RsoVz0EdcGA65/hyTNIxyF33+6iShq6eF0W1rVzSzqS3WqaDVKYa7kOIVzYIku8Nws7B8K3jqO99sNLwraiPn7G9A4n6BxRPMIDjj6xVjA2I/9V50kULrrPFVdw+QouGPREOfhYIPA/rpwGTqcCyWgnlZsKCRNzwEREkapQVR+5y1hqjiSTctL+VQZUivy65wSbjLXmqfjG/VBq1SoRHgaG9CNLg5/D+qf9eem+I3xsGHmdU64hDIX37rGj0NICKZr2O0BMAiTocfUmFDV1sDZIluLLDqKQkIfX6skDpiOweNFbw=
 script:
-  - go build
-  - go test
+  - go build .
+  - go test .
+services:
+  - docker
+before_install:
+  - docker build -t hellofresh/ci-bully .
+deploy:
+  provider: script
+  script: bash docker_push
+  on:
+    branch: master
