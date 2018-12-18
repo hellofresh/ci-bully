@@ -1,10 +1,19 @@
 language: go
 go:
   - 1.11
-
 env:
-  - GO111MODULE=on
-
+  global:
+    - GO111MODULE=on
+    - TRAVIS_SECURE_ENV_VARS=true
 script:
-  - go build
-  - go test
+  - go build .
+  - go test .
+services:
+  - docker
+before_install:
+  - docker build -t quay.io/hellofresh/ci-bully .
+deploy:
+  provider: script
+  script: bash docker_push
+  on:
+    branch: master
