@@ -1,16 +1,13 @@
-FROM alpine:3.6
+FROM golang:1.11-alpine
 
-ENV CIBULLY_VERSION 0.0.1
-ENV CIBULLY_CHECKSUM 176bdfcdb17e757b9baec7f4984baf6c58127f85b43067f0482e307b08740336
+MAINTAINER Diego Siqueira <dsi@hellofresh.com>
 
-ADD https://github.com/ahelal/ci-bully/releases/download/v${CIBULLY_VERSION}/cibully_${CIBULLY_VERSION}_linux_amd64 /usr/bin/cibully
-RUN set -ex \
-    && echo "${CIBULLY_CHECKSUM}  /usr/bin/cibully" | sha256sum -c \
-    && chmod +x /usr/bin/cibully \
-    && mkdir /config \
-    && apk add --update-cache --no-cache ca-certificates \
-    && rm -rf /var/cache/apk/*
-VOLUME /config
-WORKDIR /config
+# Install dependencies
+RUN apk add --upgrade --no-cache bash git curl \
+    && go get -u github.com/hellofresh/ci-bully
 
-CMD [ "/bin/sh", "-c", "echo You need to run dockers with cibuly ARGS" ]
+RUN go build ./src/github.com/hellofresh/ci-bully
+RUN go install ./src/github.com/hellofresh/ci-bully
+
+# Command SH
+CMD ["/bin/sh"]
